@@ -431,6 +431,17 @@ textarea.lined{width:100%;min-height:120px;border:0;outline:none;resize:vertical
  <div id="nogl" style="position:absolute;inset:auto 16px 16px;z-index:80;background:#fff;border-radius:14px;padding:12px;font-size:13px;display:none">이 기기에서는 3D 그래픽(WebGL)을 쓸 수 없어요. 다른 브라우저로 열어 주세요.</div>
 </div>
 <script>
+/* 오류 알림줄: 폰에서 문제가 생기면 원인을 화면에 보여줘요 */
+(()=>{let n=0;const bar=document.createElement('div');bar.id='errbar';
+  bar.style.cssText='position:fixed;left:8px;right:8px;top:8px;z-index:9999;background:#3a2616;color:#fff;font:600 11px/1.45 sans-serif;padding:8px 10px;border-radius:10px;display:none;box-shadow:0 4px 14px rgba(0,0,0,.4);word-break:break-all';
+  const show=m=>{if(n>=3)return;n++;bar.style.display='block';const l=document.createElement('div');l.textContent=m;bar.insertBefore(l,bar.querySelector('button'))};
+  const b=document.createElement('button');b.textContent='새로고침';b.style.cssText='margin-top:6px;border:0;border-radius:8px;padding:5px 12px;font:700 11px sans-serif;background:#E27A12;color:#fff';b.onclick=()=>location.reload();
+  const x=document.createElement('button');x.textContent='닫기';x.style.cssText='margin:6px 0 0 6px;border:0;border-radius:8px;padding:5px 12px;font:700 11px sans-serif;background:#6b5846;color:#fff';x.onclick=()=>{bar.style.display='none'};
+  bar.append(b,x);document.body.appendChild(bar);
+  window.__errShow=show;
+  addEventListener('error',e=>show('오류: '+(e.message||'?')+' ('+String(e.filename||'').split('/').pop()+':'+(e.lineno||0)+')'));
+  addEventListener('unhandledrejection',e=>show('오류(P): '+String(e.reason&&e.reason.message||e.reason)));
+})();
 const VS='attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
 const FS=`precision highp float;
 uniform vec2 uRes,uLook;uniform vec3 uCam;uniform vec4 uEx;
@@ -687,7 +698,8 @@ const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 function mk(cv,keep){
   const id=+cv.dataset.c;
   const gl=cv.getContext('webgl',{premultipliedAlpha:true,alpha:true,antialias:false,preserveDrawingBuffer:!!keep});
-  if(!gl)return null;
+  if(!gl){window.__errShow&&window.__errShow('3D 그래픽을 켤 수 없어요 (webgl 없음)');return null}
+  cv.addEventListener('webglcontextlost',ev=>{ev.preventDefault();window.__errShow&&window.__errShow('그래픽 연결이 끊겼어요 (webglcontextlost)')});
   const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(o));return o};
   const pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,VS));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,FS));gl.linkProgram(pr);gl.useProgram(pr);
   const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
