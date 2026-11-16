@@ -2388,8 +2388,8 @@ if(spl){
     e.style.cssText=`left:${x+(Math.random()*8-4)}%;top:${y+(Math.random()*4-2)}%;font-size:${(sz||14)+Math.random()*10}px;--dx:${Math.cos(a)*d}px;--dy:${Math.sin(a)*d}px;animation-delay:${i*.04}s`;L.appendChild(e);setTimeout(()=>e.remove(),1500)}};
   const chime=(arr,gap)=>arr.forEach((f,i)=>setTimeout(()=>blip(f,.22,.05),i*(gap||120)));
   const W=()=>spl.querySelector('.spw').clientWidth,H=()=>spl.querySelector('.spw').clientHeight;
-  /* 도착 연출: 노곤이 왼쪽에서, 소곤이 오른쪽에서 통통, 포곤이는 위에서 */
-  const PLAN={0:{dx:-.62,dy:0,t:.35,dur:1.5,hops:4,amp:.05},2:{dx:.62,dy:0,t:1.0,dur:1.5,hops:4,amp:.05},1:{dx:0,dy:-.6,t:1.65,dur:1.1,hops:0,amp:0}};
+  /* 도착 연출: 노곤이 왼쪽에서, 소곤이·포곤이는 함께 오른쪽에서 통통 */
+  const PLAN={0:{dx:-.62,dy:0,t:.35,dur:1.5,hops:4,amp:.05},2:{dx:.62,dy:0,t:1.0,dur:1.5,hops:4,amp:.05},1:{dx:.5,dy:0,t:1.0,dur:1.6,hops:4,amp:.05}};
   spO.forEach(o=>{const p=PLAN[o.id];o.p=p;o.el.style.transform=`translate(${p.dx*W()}px,${p.dy*H()}px)`;o.el.style.visibility='hidden'});
   const ease=k=>1-Math.pow(1-k,3);
   const bounceOut=k=>{const n=7.5625,d=2.75;if(k<1/d)return n*k*k;if(k<2/d)return n*(k-=1.5/d)*k+.75;if(k<2.5/d)return n*(k-=2.25/d)*k+.9375;return n*(k-=2.625/d)*k+.984375};
