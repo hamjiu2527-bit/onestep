@@ -1311,7 +1311,7 @@ function chain(f){
   const prev=S.f;commit(f);clearFlow();resetS(f);
   S.title=f==='nogon'?'이어서 몸을 풀어본 날':f==='pogon'?'이어서 숨을 고른 날':'이어서 생각을 꺼낸 날';S.reason='앞 활동에 이어서';
   fade(()=>{enterRoom(f);T(()=>say(`${FR[prev].name}랑 하고 왔구나. 이어서 해보자.`,3200),500);
-    T(()=>{if(f==='nogon'){S.item='몸을 조금 풀었어요';nWake()}else if(f==='pogon'){S.item='숨 세 번 함께 쉬었어요';pHold()}else sReason()},900)});
+    T(()=>{if(f==='nogon'){S.item='몸을 조금 풀었어요';nWake()}else if(f==='pogon'){S.item='숨 세 번 함께 쉬었어요';pHold()}else sReason()},2800)});
 }
 function finish(){
   commit(null);clearT();G.wk=null;if(typeof MAP!=='undefined'&&MAP.on)mapOff();Snd.stop();clearWorld();
