@@ -150,6 +150,7 @@ textarea.say{width:100%;height:110px;border:2px solid var(--line);border-radius:
 .hud .pill.t{max-width:46%}
 
 /* ===== v14 추가 ===== */
+#sheet.slim{padding:20px 14px 10px}#sheet.slim .k{font-size:11px;margin:0 0 1px}#sheet.slim h2{font-size:16px;margin:0 0 3px}#sheet.slim p.d{font-size:12.5px;margin:0 0 7px}#sheet.slim .opts{margin:0}#sheet.slim .trk{margin:0 0 6px;height:50px}#sheet.slim .trk .kn{width:42px;height:42px;top:4px}#sheet.slim .btns .btn{padding:8px 6px;font-size:12.5px}
 #sheet.mini{padding:22px 12px 10px}#sheet.mini h2{font-size:15px;margin:0 0 7px}#sheet.mini .k{font-size:11px}
 #sheet.mini .btns .btn{padding:10px 6px;font-size:13px}
 #sheet .xrow{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
@@ -884,6 +885,7 @@ var DOCK={until:0,auto:false,user:false};
 function dockBusy(){return !!G.wk||Date.now()<DOCK.until}
 function dockCheck(){const s=sheetEl;
   if(!s.classList.contains('on')){DOCK.auto=false;return}
+  if(s.classList.contains('slim')){if(DOCK.auto){s.classList.remove('min');DOCK.auto=false}return}
   if(dockBusy()){
     const ae=document.activeElement,typing=!!(ae&&ae.matches&&ae.matches('#sheet textarea,#sheet input'));
     if(!DOCK.user&&!typing&&!s.classList.contains('min')){s.classList.add('min');DOCK.auto=true}
@@ -1103,7 +1105,7 @@ function burst(){
 }
 /* ---------- 시트(선택창) ---------- */
 function sheet(o){
-  const s=sheetEl;s.querySelector('.k').textContent=o.k||'';s.classList.toggle('mini',!!o.mini);
+  const s=sheetEl;s.querySelector('.k').textContent=o.k||'';s.classList.toggle('mini',!!o.mini);s.classList.toggle('slim',!!o.slider);
   const hx=s.querySelector('.hx');hx.innerHTML='';if(o.h)hx.insertAdjacentHTML('beforeend',o.h);const h2=document.createElement('h2');h2.textContent=o.t||'';hx.appendChild(h2);
   const d=s.querySelector('.d');d.textContent=o.d||'';d.style.display=o.d?'':'none';
   const ox=s.querySelector('.opts');ox.innerHTML='';ox.classList.toggle('g2',!!o.cols);ox.style.display=(o.opts||o.slider||o.input)?'':'none';
