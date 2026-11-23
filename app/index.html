@@ -1306,21 +1306,23 @@ function replyShow(r){
     if(/더 작게/.test(txt))return()=>{if(S.f==='nogon'){S.rung=Math.max(0,S.rung-1);S.alt=0;S.saved=null;S.item='';nAdjust()}else startFlow(S.f)};
     if(/숨 한 번/.test(txt))return()=>{S.saved=null;pHold()};
     return finish};
-  const isNx=t=>/이어서|다른 친구/.test(t),hasNx=r.chips.some(isNx);
+  const isNx=t=>/이어서|다른 친구/.test(t);
   sheet({k:FR[S.f].name,t:r.reply,opts:r.chips.filter(t=>!isNx(t)).map(t=>({l:t,f:act(t)})),row:[{l:'한마디 더 하기',f:()=>answerBox(2)}],link:{l:'오늘은 여기까지',f:finish}});
-  if(hasNx){/* 글로만 된 '이어서' 선택지 대신, 캐릭터를 보고 다음 친구를 고르게 한다 */
-    const others=['nogon','pogon','sogon'].filter(x=>x!==S.f),lab={nogon:'몸 조금 풀기',pogon:'숨 고르기',sogon:'생각 꺼내기'};
-    const rx=sheetEl.querySelector('.xrow');
-    rx.insertAdjacentHTML('afterbegin',`<div class="nxtw"><p class="nxtq">이어서 할 친구를 골라줘</p><div class="nxt">${others.map(x=>`<button data-f="${x}">${avatar(x)}<div class="nt"><span>${FR[x].name}</span><small>${lab[x]}</small></div></button>`).join('')}</div></div>`);
-    rx.querySelectorAll('.nxt button').forEach(b=>b.onclick=()=>{blip(660,.06);commit(null);chain(b.dataset.f)});
-  }
+  addNextFriends();
+}
+/* 노곤이·포곤이·소곤이 모두 같은 모양: 캐릭터를 보고 이어서 할 친구를 고른다 */
+function addNextFriends(){
+  const others=['nogon','pogon','sogon'].filter(x=>x!==S.f),lab={nogon:'몸 조금 풀기',pogon:'숨 고르기',sogon:'생각 꺼내기'};
+  const rx=sheetEl.querySelector('.xrow');rx.style.display='flex';
+  rx.insertAdjacentHTML('afterbegin',`<div class="nxtw"><p class="nxtq">이어서 할 친구를 골라줘</p><div class="nxt">${others.map(x=>`<button data-f="${x}">${avatar(x)}<div class="nt"><span>${FR[x].name}</span><small>${lab[x]}</small></div></button>`).join('')}</div></div>`);
+  rx.querySelectorAll('.nxt button').forEach(b=>b.onclick=()=>{blip(660,.06);commit(null);chain(b.dataset.f)});
 }
 async function reply2(t){
   S.chat.said=S.chat.said?S.chat.said+' / '+t:t;
   sheet({k:FR[S.f].name,t:'…',d:'친구가 듣고 있어요'});say('응, 듣고 있어.',0);
   const r=await friendReply(t,2);if(G.view!=='room')return;
   S.chat.thanks=true;say(r.reply,0);
-  sheet({k:FR[S.f].name,t:r.reply,btns:[{l:'오늘은 여기까지',f:finish}]});
+  sheet({k:FR[S.f].name,t:r.reply,btns:[{l:'오늘은 여기까지',f:finish}]});addNextFriends();
 }
 function chain(f){
   const prev=S.f;commit(f);clearFlow();resetS(f);
