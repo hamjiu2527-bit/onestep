@@ -879,6 +879,19 @@ const clearT=()=>{S.timers.forEach(clearTimeout);S.timers=[]};
 const G={k:null,me:null,x:0,y:0,wk:null,stepT:0,cam:{x:0,y:0,tx:0,ty:0,hold:0},W:0,H:0,wh:0,ww:0,cwpx:0,carry:null,view:'start',bubT:0,u:1};
 const AV={};
 const app=$('#app'),room=$('#room'),world=$('#world'),meEl=$('#me'),bub=$('#bub'),sheetEl=$('#sheet');
+/* 캐릭터가 말하거나 움직이는 동안에는 선택창을 아래로 내려 두고, 끝나면 다시 올린다 */
+var DOCK={until:0,auto:false,user:false};
+function dockBusy(){return !!G.wk||Date.now()<DOCK.until}
+function dockCheck(){const s=sheetEl;
+  if(!s.classList.contains('on')){DOCK.auto=false;return}
+  if(dockBusy()){
+    const ae=document.activeElement,typing=!!(ae&&ae.matches&&ae.matches('#sheet textarea,#sheet input'));
+    if(!DOCK.user&&!typing&&!s.classList.contains('min')){s.classList.add('min');DOCK.auto=true}
+  }else{DOCK.user=false;if(DOCK.auto){s.classList.remove('min');DOCK.auto=false}}
+}
+function dockFor(ms){DOCK.until=Math.max(DOCK.until,Date.now()+ms);dockCheck()}
+const dockSpeak=(t,ms)=>dockFor(ms>0?ms:Math.min(3600,1100+String(t).length*80));
+setInterval(dockCheck,200);
 let meCv=meEl.querySelector('canvas');
 const wpos=(px,py)=>[px/100*G.ww,py/100*G.wh];
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2400)}
@@ -978,7 +991,7 @@ function addFriend(id,x,y,sc,face){
   let c=null;try{c=mk(w.querySelector('canvas'))}catch(e){}
   if(!c)return null;c.face(face);const f={el:w,c,id,bub:w.querySelector('.fbub')};G.pf.push(f);return f;
 }
-function fsay(f,t,ms){if(!f)return;feel(f.c,moodOf(t,1));f.bub.textContent=t;f.bub.classList.add('on');f.c.hop();clearTimeout(f.t);if(ms!==0)f.t=setTimeout(()=>f.bub.classList.remove('on'),ms||2800)}
+function fsay(f,t,ms){if(!f)return;dockSpeak(t,ms===0?0:(ms||2800));feel(f.c,moodOf(t,1));f.bub.textContent=t;f.bub.classList.add('on');f.c.hop();clearTimeout(f.t);if(ms!==0)f.t=setTimeout(()=>f.bub.classList.remove('on'),ms||2800)}
 function roomProps(){
   world.querySelectorAll('.prop').forEach(e=>e.remove());
   if(G.k==='nogon'){const e=document.createElement('div');e.className='prop';e.innerHTML=SV.bsk;e.dataset.px=15;e.dataset.py=66;e.style.width=G.ww*.15+'px';world.appendChild(e);const[x,y]=wpos(15,66);e.style.left=x+'px';e.style.top=y+'px'}
@@ -1053,7 +1066,7 @@ function swapRoom(key,after,at){
 }
 function clearWorld(){world.querySelectorAll('.itm,.mnd,.carry,.star,.hs,#trail,#mnl,.glass,.stream,.foam,.quote,.towelfx,.wear,.fort,.pf,.nt,.zz,.steam').forEach(e=>e.remove());G.worn=[];G.pf=[];room.classList.remove('night');closeFort();closeMemo()}
 function clearFlow(){clearT();if(G.me)G.me.reset();G.wk=null;G.carry=null;if(typeof MAP!=='undefined')MAP.on=false;hideSheet();bub.classList.remove('on');clearWorld();Snd.stop();if(G.me){G.me.sleep(false);meEl.querySelectorAll('.hold,.brg').forEach(e=>e.remove())}}
-function say(t,ms=3200){bub.textContent=t;bub.classList.add('on');clearTimeout(G.bubT);if(ms>0)G.bubT=setTimeout(()=>bub.classList.remove('on'),ms);if(G.me&&G.view==='room')feel(G.me,moodOf(t,1))}
+function say(t,ms=3200){dockSpeak(t,ms);bub.textContent=t;bub.classList.add('on');clearTimeout(G.bubT);if(ms>0)G.bubT=setTimeout(()=>bub.classList.remove('on'),ms);if(G.me&&G.view==='room')feel(G.me,moodOf(t,1))}
 /* ---------- 표정·몸짓: 말투와 내가 쓴 말에 따라 바뀐다 ---------- */
 const MD={soft:/힘들|지쳤|지쳐|피곤|우울|슬프|외로|무거|눌려|막막|불안|걱정|싫|못 |못해|괴로|답답|울고|아파|짜증|무서|떨려|버거|가라앉|포기|지겨|귀찮/,
  happy:/괜찮아졌|좋아|좋다|고마|했어|했다|해냈|잘했|개운|상쾌|편해|가벼|포근|따뜻|행복|기뻐|신났|웃|재밌|다행|같이 일어났|적어 뒀|잘 자|좋은 냄새|반가/,
@@ -1079,9 +1092,9 @@ let _rin=0;document.addEventListener('input',e=>{if(!e.target.matches||!e.target
 function trailEl(){let t=$('#trail');if(t)return t;
   t=document.createElementNS('http://www.w3.org/2000/svg','svg');t.id='trail';t.setAttribute('width',G.ww);t.setAttribute('height',G.wh);t.style.cssText='position:absolute;left:0;top:0;z-index:2;pointer-events:none;overflow:visible';
   t.innerHTML='<line stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-dasharray="0.1 17" opacity=".95"/><circle r="9" fill="none" stroke="#fff" stroke-width="3" opacity=".9"/>';world.insertBefore(t,meEl);return t}
-function walkTo(p,cb,spd){const[tx,ty]=wpos(p[0],p[1]);G.wk={tx,ty,spd:spd||ROOMS[G.k].spd,cb};const t=trailEl(),l=t.querySelector('line'),c=t.querySelector('circle');l.setAttribute('x1',G.x);l.setAttribute('y1',G.y);l.setAttribute('x2',tx);l.setAttribute('y2',ty);c.setAttribute('cx',tx);c.setAttribute('cy',ty);blip(520,.05)}
-function arrived(){const w=G.wk;G.wk=null;const t=$('#trail');if(t)t.remove();G.me.face(0);if(w&&w.cb)w.cb()}
-function anim(a){const m=G.me;if(a==='pat')m.pat();else if(a==='stretch'){m.stretch();T(()=>m.hop(),450)}else if(a==='sleep'){m.sleep(true);T(()=>m.sleep(false),2600)}else m.hop()}
+function walkTo(p,cb,spd){const[tx,ty]=wpos(p[0],p[1]);G.wk={tx,ty,spd:spd||ROOMS[G.k].spd,cb};const t=trailEl(),l=t.querySelector('line'),c=t.querySelector('circle');l.setAttribute('x1',G.x);l.setAttribute('y1',G.y);l.setAttribute('x2',tx);l.setAttribute('y2',ty);c.setAttribute('cx',tx);c.setAttribute('cy',ty);blip(520,.05);dockCheck()}
+function arrived(){const w=G.wk;G.wk=null;dockCheck();const t=$('#trail');if(t)t.remove();G.me.face(0);if(w&&w.cb)w.cb()}
+function anim(a){const m=G.me;dockFor(a==='sleep'?2800:1800);if(a==='pat')m.pat();else if(a==='stretch'){m.stretch();T(()=>m.hop(),450)}else if(a==='sleep'){m.sleep(true);T(()=>m.sleep(false),2600)}else m.hop()}
 function burst(){
   const cx=G.x,cy=G.y-G.cwpx*0.75;
   for(let i=0;i<14;i++){const e=document.createElement('div');e.className='star';e.textContent=i%3?'✦':'★';e.style.left=cx+'px';e.style.top=cy+'px';world.appendChild(e);
@@ -1103,15 +1116,15 @@ function sheet(o){
   (o.btns||[]).forEach(b=>{const e=document.createElement('button');e.className='btn'+(b.g?' ghost':'');e.textContent=b.l;if(b.dis)e.disabled=true;e.onclick=()=>{blip(700,.05);b.f()};bx.appendChild(e)});
   const old=s.querySelector('.lk');if(old)old.remove();
   if(o.link){const l=document.createElement('button');l.className='lk';l.textContent=o.link.l;l.onclick=o.link.f;s.appendChild(l)}
-  s.classList.remove('min');s.classList.add('on');
+  s.classList.remove('min');s.classList.add('on');DOCK.auto=false;DOCK.user=false;dockCheck();
 }
-function hideSheet(){sheetEl.classList.remove('on','min')}
+function hideSheet(){sheetEl.classList.remove('on','min');DOCK.auto=false}
 (()=>{const g=$('#grab');if(!g)return;let y0=null;
   g.addEventListener('pointerdown',e=>{y0=e.clientY;try{g.setPointerCapture(e.pointerId)}catch(_){}});
   const fin=e=>{if(y0===null)return;const dy=e.clientY-y0;y0=null;const m=sheetEl.classList;
-    if(Math.abs(dy)<8)m.toggle('min');else if(dy>0)m.add('min');else m.remove('min');blip(520,.04,.03)};
+    if(Math.abs(dy)<8)m.toggle('min');else if(dy>0)m.add('min');else m.remove('min');DOCK.auto=false;DOCK.user=dockBusy()&&!m.contains('min');blip(520,.04,.03)};
   g.addEventListener('pointerup',fin);g.addEventListener('pointercancel',()=>{y0=null});
-  g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();sheetEl.classList.toggle('min')}});
+  g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();sheetEl.classList.toggle('min');DOCK.auto=false;DOCK.user=dockBusy()&&!sheetEl.classList.contains('min')}});
 })();
 const sheetVal=()=>{const t=sheetEl.querySelector('textarea.sin');return t?t.value.trim():''};
 function bindSlider(box,cb){
