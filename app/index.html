@@ -1306,7 +1306,7 @@ async function reply(c,typed){
 function replyShow(r){
   say(r.reply,0);
   const act=txt=>{
-    if(/이어서|다른 친구/.test(txt))return pickNext;
+    if(/이어서|다른 친구/.test(txt))return()=>finish(true);
     if(/더 작게/.test(txt))return()=>{if(S.f==='nogon'){S.rung=Math.max(0,S.rung-1);S.alt=0;S.saved=null;S.item='';nAdjust()}else startFlow(S.f)};
     if(/숨 한 번/.test(txt))return()=>{S.saved=null;pHold()};
     return finish};
@@ -1319,24 +1319,18 @@ async function reply2(t){
   S.chat.thanks=true;say(r.reply,0);
   sheet({k:FR[S.f].name,t:r.reply,btns:[{l:'오늘은 여기까지',f:finish}]});
 }
-function pickNext(){
-  commit(null);
-  const others=['nogon','pogon','sogon'].filter(x=>x!==S.f);
-  const lab={nogon:'노곤이와 몸 조금 풀기',pogon:'포곤이와 숨 고르기',sogon:'소곤이와 생각 꺼내기'};
-  sheet({k:'이어서',t:'누구와 이어갈까?',d:'지금 기분에 맞는 친구를 골라줘',opts:others.map(x=>({l:lab[x],f:()=>chain(x)})),link:{l:'오늘은 여기까지',f:finish}});
-}
 function chain(f){
   const prev=S.f;commit(f);clearFlow();resetS(f);
   S.title=f==='nogon'?'이어서 몸을 풀어본 날':f==='pogon'?'이어서 숨을 고른 날':'이어서 생각을 꺼낸 날';S.reason='앞 활동에 이어서';
   fade(()=>{enterRoom(f);T(()=>say(`${FR[prev].name}랑 하고 왔구나. 이어서 해보자.`,3200),500);
     T(()=>{if(f==='nogon'){S.item='몸을 조금 풀었어요';nWake()}else if(f==='pogon'){S.item='숨 세 번 함께 쉬었어요';pHold()}else sReason()},2800)});
 }
-function finish(){
+function finish(noVid){
   commit(null);clearT();G.wk=null;if(typeof MAP!=='undefined'&&MAP.on)mapOff();Snd.stop();clearWorld();
   G.me.hop();T(()=>G.me.hop(),350);burst();blip(880,.1,.06);T(()=>blip(1175,.14,.06),110);buzz([20,40,20]);
   say(CLOSE,0);$('#prog').textContent='오늘의 하나 ✓';
   doneSheet();
-  if(!S.saved.vid)T(()=>{if(G.view==='room'&&!$('#cmodal'))askVideo()},1400);
+  if(noVid!==true&&!S.saved.vid)T(()=>{if(G.view==='room'&&!$('#cmodal'))askVideo()},1400);
 }
 function doneSheet(){
   const e=S.saved,others=['nogon','pogon','sogon'].filter(x=>x!==S.f);
