@@ -327,6 +327,7 @@ textarea.lined{width:100%;min-height:120px;border:0;outline:none;resize:vertical
 .memo .btns{margin-top:10px;display:flex;gap:8px}
 .memo .empty{font:700 14px/1.6 var(--font);color:#8C6A4D;text-align:center;padding:20px 0;background:#FFF9EB}
 .nxt{display:flex;gap:8px;margin:0 0 10px}
+#sheet .nxtw{flex:0 0 100%}#sheet .nxtq{margin:0 0 6px;font-size:12.5px;font-weight:700;color:var(--sub)}#sheet .nxtw .nxt{margin:0 0 4px}#sheet .nxtw .nxt button{flex-direction:row;text-align:left;gap:8px;padding:6px 8px}#sheet .nxtw .nxt button img,#sheet .nxtw .nxt button .av{width:38px;height:38px;flex:none}#sheet .nxtw .nxt button span{display:block;font-size:13.5px;line-height:1.2}#sheet .nxtw .nxt button small{display:block;font-size:11px}#sheet .nxtw .nxt button .nt{display:flex;flex-direction:column;gap:1px;min-width:0}
 .nxt button{flex:1;border:2px solid var(--line);background:#fff;border-radius:16px;padding:8px 6px;font:800 13px var(--font);color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
 .nxt button img,.nxt button .av{width:46px;height:46px;border-radius:50%;object-fit:cover}
 .nxt button small{font-weight:700;font-size:11px;color:#8C6A4D}
@@ -1302,11 +1303,17 @@ async function reply(c,typed){
 function replyShow(r){
   say(r.reply,0);
   const act=txt=>{
-    if(/이어서|다른 친구/.test(txt))return()=>finish(true);
     if(/더 작게/.test(txt))return()=>{if(S.f==='nogon'){S.rung=Math.max(0,S.rung-1);S.alt=0;S.saved=null;S.item='';nAdjust()}else startFlow(S.f)};
     if(/숨 한 번/.test(txt))return()=>{S.saved=null;pHold()};
     return finish};
-  sheet({k:FR[S.f].name,t:r.reply,opts:r.chips.map(t=>({l:t,f:act(t)})),row:[{l:'한마디 더 하기',f:()=>answerBox(2)}],link:{l:'오늘은 여기까지',f:finish}});
+  const isNx=t=>/이어서|다른 친구/.test(t),hasNx=r.chips.some(isNx);
+  sheet({k:FR[S.f].name,t:r.reply,opts:r.chips.filter(t=>!isNx(t)).map(t=>({l:t,f:act(t)})),row:[{l:'한마디 더 하기',f:()=>answerBox(2)}],link:{l:'오늘은 여기까지',f:finish}});
+  if(hasNx){/* 글로만 된 '이어서' 선택지 대신, 캐릭터를 보고 다음 친구를 고르게 한다 */
+    const others=['nogon','pogon','sogon'].filter(x=>x!==S.f),lab={nogon:'몸 조금 풀기',pogon:'숨 고르기',sogon:'생각 꺼내기'};
+    const rx=sheetEl.querySelector('.xrow');
+    rx.insertAdjacentHTML('afterbegin',`<div class="nxtw"><p class="nxtq">이어서 할 친구를 골라줘</p><div class="nxt">${others.map(x=>`<button data-f="${x}">${avatar(x)}<div class="nt"><span>${FR[x].name}</span><small>${lab[x]}</small></div></button>`).join('')}</div></div>`);
+    rx.querySelectorAll('.nxt button').forEach(b=>b.onclick=()=>{blip(660,.06);commit(null);chain(b.dataset.f)});
+  }
 }
 async function reply2(t){
   S.chat.said=S.chat.said?S.chat.said+' / '+t:t;
