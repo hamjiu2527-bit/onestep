@@ -357,9 +357,6 @@ textarea.lined{width:100%;min-height:120px;border:0;outline:none;resize:vertical
 #splash .spsp{position:absolute;inset:0;z-index:7;pointer-events:none}
 #splash .spsp b{position:absolute;color:#FFB347;font-weight:900;text-shadow:0 0 6px #fff;animation:spst 1.3s ease-out forwards;transform:translate(-50%,-50%)}
 @keyframes spst{0%{opacity:0;scale:.2}25%{opacity:1;scale:1.2}100%{opacity:0;scale:.6;translate:var(--dx) var(--dy)}}
-#splash .spgo{position:absolute;left:50%;bottom:9%;transform:translateX(-50%);z-index:8;border:0;border-radius:99px;background:#E27A12;color:#fff;font:800 16px var(--font);padding:13px 44px;box-shadow:0 6px 0 #B85F0A,0 10px 18px rgba(190,100,20,.28);opacity:0;pointer-events:none;transition:opacity .5s}
-#splash.rdy .spgo{opacity:1;pointer-events:auto;animation:gob 1.8s ease-in-out infinite}
-#splash .spgo:active{transform:translateX(-50%) translateY(3px);box-shadow:0 3px 0 #B85F0A}
 @keyframes gob{0%,100%{translate:0 0}50%{translate:0 -3px}}
 #splash .spb{position:absolute;left:50%;bottom:96%;transform:translateX(-50%) scale(.6);background:#fff;color:#4E1B00;font:800 11.5px/1.35 var(--font);padding:5px 10px;border-radius:12px;box-shadow:0 2px 6px rgba(120,70,20,.22);white-space:nowrap;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none}
 #splash .spb.on{opacity:1;transform:translateX(-50%) scale(1)}
@@ -417,7 +414,6 @@ textarea.lined{width:100%;min-height:120px;border:0;outline:none;resize:vertical
   <div class="spc" data-i="0" style="left:5%;top:68.5%"><canvas data-c="0" aria-label="노곤이"></canvas><div class="spb"></div></div>
   <div class="spc" data-i="2" style="left:64%;top:68.5%"><canvas data-c="2" aria-label="소곤이"></canvas><div class="spb"></div></div>
   <div class="spc mid" data-i="1" style="left:33.5%;top:66.5%"><canvas data-c="1" aria-label="포곤이"></canvas><div class="spb"></div></div>
-  <button class="spgo" type="button">시작하기</button>
  </div></section>
  <section id="room" class="scr" aria-label="방">
   <div id="ext"></div><div id="world"><img class="bg" alt=""><div id="me"><canvas data-c="0"></canvas></div><div class="bub" id="bub"></div></div>
