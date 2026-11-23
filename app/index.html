@@ -881,14 +881,16 @@ const G={k:null,me:null,x:0,y:0,wk:null,stepT:0,cam:{x:0,y:0,tx:0,ty:0,hold:0},W
 const AV={};
 const app=$('#app'),room=$('#room'),world=$('#world'),meEl=$('#me'),bub=$('#bub'),sheetEl=$('#sheet');
 /* 캐릭터가 말하거나 움직이는 동안에는 선택창을 아래로 내려 두고, 끝나면 다시 올린다 */
-var DOCK={until:0,auto:false,user:false};
+var DOCK={until:0,auto:false,user:false,touch:false};
+['pointerdown'].forEach(t=>document.addEventListener(t,e=>{if(e.target.closest&&e.target.closest('#sheet'))DOCK.touch=true},true));
+['pointerup','pointercancel'].forEach(t=>document.addEventListener(t,()=>{DOCK.touch=false},true));
 function dockBusy(){return !!G.wk||Date.now()<DOCK.until}
 function dockCheck(){const s=sheetEl;
   if(!s.classList.contains('on')){DOCK.auto=false;return}
   if(s.classList.contains('slim')){if(DOCK.auto){s.classList.remove('min');DOCK.auto=false}return}
   if(dockBusy()){
     const ae=document.activeElement,typing=!!(ae&&ae.matches&&ae.matches('#sheet textarea,#sheet input'));
-    if(!DOCK.user&&!typing&&!s.classList.contains('min')){s.classList.add('min');DOCK.auto=true}
+    if(!DOCK.user&&!typing&&!DOCK.touch&&!s.classList.contains('min')){s.classList.add('min');DOCK.auto=true}
   }else{DOCK.user=false;if(DOCK.auto){s.classList.remove('min');DOCK.auto=false}}
 }
 function dockFor(ms){DOCK.until=Math.max(DOCK.until,Date.now()+ms);dockCheck()}
